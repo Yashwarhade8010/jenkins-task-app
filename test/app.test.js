@@ -8,7 +8,7 @@ test('GET / returns welcome message', async () => {
 
     assert.equal(response.statusCode, 200);
     assert.deepEqual(response.body, {
-      message: "Welcome to Jenkins Task App! testing for 2nd time",
+      message: "Welcome to Jenkins Task App! Automatic Deployment",
       version: "1.0.0",
     });
 });

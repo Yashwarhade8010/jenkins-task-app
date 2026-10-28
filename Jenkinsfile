@@ -51,8 +51,36 @@ pipeline {
                 }
             }
         }
-
-
+        stage('Deploy to EC2'){
+            steps {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'deploy-server-ssh',
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USER'
+                    )
+                ]) {
+                    sh '''
+                        set -eu
+                        echo "Deploying build ${BUILD_NUMBER} to EC2..."
+                        
+                        ssh -i "$SSH_KEY" \
+                            -o StrictHostKeyChecking=accept-new \
+                            "$SSH_USER@172.31.3.52" "
+                                set -e
+                                docker pull yashwarhadee/jenkins-task-app:${BUILD_NUMBER}
+                                docker rm -f jenkins-task-app 2>/dev/null || true
+                                docker run -d \
+                                    --name jenkins-task-app \
+                                    -p 3000:3000 \
+                                    --restart unless-stopped \
+                                    yashwarhadee/jenkins-task-app:${BUILD_NUMBER}
+                            "
+                        echo "Deployment completed!"
+                    '''
+                }
+            }
+        }
 
     }
 
